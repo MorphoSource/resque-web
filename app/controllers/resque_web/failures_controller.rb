@@ -49,7 +49,7 @@ module ResqueWeb
           end
         end
 
-        job_ids.reverse.map { |id| reque_single_job(id) }
+        job_ids.sort.reverse.map { |id| reque_single_job(id) }
       else
         flash[:error] = "No exception specified for retrying failures."
       end
