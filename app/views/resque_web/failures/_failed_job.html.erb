@@ -38,7 +38,7 @@
     <dt>Exception</dt>
     <dd>
       <code><%= job['exception'] %></code>
-      <%= form_tag(retry_all_for_exception_failures_path(exception: job['exception'].to_s), method: :put) do %>
+      <%= form_tag(retry_all_for_exception_failures_path(exception: job['exception'].to_s), method: :put, style: 'margin-top: 0;') do %>
         <%= submit_tag "Retry All Jobs with Exception", data: { confirm: "Are you sure you want to retry ALL #{failure_queue_name.downcase} jobs with this exception?" } %>
       <% end %>
     </dd>

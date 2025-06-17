@@ -43,6 +43,7 @@ module ResqueWeb
       start    = options[:start] || 1
       per_page = options[:per_page] || PER_PAGE
       total    = options[:total] || 0
+      span_tag = options[:span_tag]
       return if total < per_page
 
       markup = ""
@@ -54,7 +55,7 @@ module ResqueWeb
         markup << link_to(raw("more &raquo;"), params.permit!.merge(:start => start + per_page), :class => 'btn more')
       end
 
-      content_tag :p, raw(markup), :class => 'pagination'
+      content_tag (span_tag ? :span : :p), raw(markup), :class => (span_tag ? '' : 'pagination')
     end
 
     def poll(polling=false)
