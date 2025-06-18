@@ -8,6 +8,7 @@
   <%= form_tag(destroy_all_failures_path(queue: params[:queue]), method: :delete) do %>
     <%= submit_tag "Clear #{failure_queue_name} Jobs", class: 'btn btn-danger', data: { confirm: "Are you sure you want to clear ALL #{failure_queue_name.downcase} jobs?" } %>
     <% if failure_size > failure_per_page %>
+      <%= pagination(start: failure_start_at, total: failure_size, span_tag: true) unless params[:class] %>
       <%= link_to "Last page &raquo;".html_safe, { start: (failure_size - failure_per_page) }, class: 'btn' %>
     <% end %>
   <% end %>
@@ -17,7 +18,7 @@
 <% end %>
 
 <% if multiple_failure_queues? && !params[:queue] %>
-  <p class="sub"><b><%= Resque::Failure.queues.size %></b> failure queues total</sub>
+  <p class="sub"><b><%= Resque::Failure.queues.size %></b> failure queues total</p>
   <%= render partial: 'overview' %>
 <% else %>
   <p class="sub">Showing <%= failure_start_at %> to <%= failure_end_at %> of <b><%= failure_size %></b> jobs</p>

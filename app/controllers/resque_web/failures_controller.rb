@@ -38,6 +38,24 @@ module ResqueWeb
       redirect_to failures_path(redirect_params)
     end
 
+    def retry_all_for_exception
+      if params[:exception].present?
+        exception = params[:exception]
+        job_ids = []
+
+        Resque::Failure.each(0, Resque::Failure.count, params[:queue] || 'failed') do |id, item|
+          if item['exception'] == exception
+            job_ids << id
+          end
+        end
+
+        job_ids.sort.reverse.map { |id| reque_single_job(id) }
+      else
+        flash[:error] = "No exception specified for retrying failures."
+      end
+      redirect_to failures_path(redirect_params)
+    end
+
     private
 
     #API agnostic for Resque 2 with duck typing on requeue_and_remove

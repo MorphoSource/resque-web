@@ -21,6 +21,7 @@ ResqueWeb::Engine.routes.draw do
     end
     collection do
       put 'retry_all'
+      put 'retry_all_for_exception'
       delete 'destroy_all'
     end
   end

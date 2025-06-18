@@ -7,7 +7,7 @@
     <dt>Worker</dt>
     <dd>
       <%= job['worker'].split(':')[0...2].join(':') %>
-      on <b class="label label-info"><%= job['queue'] %></b >
+      on <b class="label label-info"><%= job['queue'] %></b>
       at <b><span class="time"><%= Time.parse(job['failed_at']).strftime(failure_date_format) %></span></b>
 
       <% if job['retried_at'] %>
@@ -36,7 +36,12 @@
     <dt>Arguments</dt>
     <dd><pre><%= job_arguments(job) %></pre></dd>
     <dt>Exception</dt>
-    <dd><code><%= job['exception'] %></code></dd>
+    <dd>
+      <code><%= job['exception'] %></code>
+      <%= form_tag(retry_all_for_exception_failures_path(exception: job['exception'].to_s), method: :put, style: 'margin-top: 0;') do %>
+        <%= submit_tag "Retry All Jobs with Exception", data: { confirm: "Are you sure you want to retry ALL #{failure_queue_name.downcase} jobs with this exception?" } %>
+      <% end %>
+    </dd>
     <dt>Error</dt>
     <dd class="error">
       <% if job['backtrace'] %>
