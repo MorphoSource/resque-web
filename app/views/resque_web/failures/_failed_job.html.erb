@@ -35,9 +35,9 @@
     </dd>
     <dt>Job Class</dt>
     <dd>
-      <% if job['payload'] && job['payload']['args'] && job['payload']['args']['job_class'] %>
-        <%= link_to failures_path(:class=>job['payload']['class'], :queue=>params[:queue], :job_class=>job['payload']['args']['job_class']) do %>
-          <code><%= job['payload']['args']['job_class'] %></code>
+      <% if job['payload'] && job['payload']['args'] && job['payload']['args']&.first['job_class'] %>
+        <%= link_to failures_path(:class=>job['payload']['class'], :queue=>params[:queue], :job_class=>job['payload']['args']&.first['job_class']) do %>
+          <code><%= job['payload']['args']&.first['job_class'] %></code>
         <% end %>
       <% else %>
         <code>nil</code>
