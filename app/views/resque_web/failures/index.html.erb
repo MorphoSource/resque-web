@@ -1,7 +1,15 @@
 <% if multiple_failure_queues? && !params[:queue] %>
   <h1>All Failure Queues</h1>
 <% else %>
-  <h1>Failed Jobs <%= "on '#{params[:queue]}'" if params[:queue] %> <%= "with class '#{params[:class]}'" if params[:class] %></h1>
+  <% if params[:job_class] %>
+    <h1>Failed Jobs <%= "on '#{params[:queue]}'" if params[:queue] %> <%= "with job class '#{params[:job_class]}'" %></h1>
+  <% elsif params[:exception] %>
+    <h1>Failed Jobs <%= "on '#{params[:queue]}'" if params[:queue] %> <%= "with exception '#{params[:exception]}'" %></h1>
+  <% elsif params[:class] %>
+    <h1>Failed Jobs <%= "on '#{params[:queue]}'" if params[:queue] %> <%= "with class '#{params[:class]}'" %></h1>
+  <% else %>
+    <h1>Failed Jobs <%= "on '#{params[:queue]}'" if params[:queue] %></h1>
+  <% end %>
 <% end %>
 
 <% unless failure_size.zero? %>

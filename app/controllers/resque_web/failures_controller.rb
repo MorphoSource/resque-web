@@ -56,6 +56,24 @@ module ResqueWeb
       redirect_to failures_path(redirect_params)
     end
 
+    def retry_all_for_job_class
+      if params[:job_class].present?
+        job_class = params[:job_class]
+        job_ids = []
+
+        Resque::Failure.each(0, Resque::Failure.count, params[:queue] || 'failed') do |id, item|
+          if item['payload'] && item['payload']['args'] && item['payload']['args']&.first['job_class'] == job_class
+            job_ids << id
+          end
+        end
+
+        job_ids.sort.reverse.map { |id| reque_single_job(id) }
+      else
+        flash[:error] = "No job class specified for retrying failures."
+      end
+      redirect_to failures_path(redirect_params)
+    end
+
     private
 
     #API agnostic for Resque 2 with duck typing on requeue_and_remove

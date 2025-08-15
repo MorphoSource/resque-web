@@ -1,7 +1,35 @@
 module ResqueWeb
   module FailuresHelper
     def each_failure(&block)
-      Resque::Failure.each(failure_start_at, failure_per_page, params[:queue], params[:class], &block)
+      if params[:job_class].present? || params[:exception].present?
+        failures = []
+        Resque::Failure.each(0, Resque::Failure.count, params[:queue] || 'failed', params[:class]) do |id, item|
+          matches_conditions = true
+
+          if params[:exception].present?
+            if item['exception'] != params[:exception]
+              matches_conditions = false
+            end
+          end
+
+          if params[:job_class].present?
+            item_job_class = ( item.dig('payload', 'args')&.first || {} )['job_class']
+            if item_job_class.present? && item_job_class != params[:job_class]
+              matches_conditions = false
+            end
+          end
+
+          if matches_conditions == true
+            failures << [id, item]
+          end
+
+          failures_page = failures.slice(failure_start_at, failure_per_page)
+          failures_page.each &block
+        end
+      else
+        # default case, use standard Resque library
+        Resque::Failure.each(failure_start_at, failure_per_page, params[:queue], params[:class], &block)
+      end
     end
 
     def failure_date_format
