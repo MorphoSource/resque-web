@@ -22,10 +22,9 @@ module ResqueWeb
           if matches_conditions == true
             failures << [id, item]
           end
-
-          failures_page = failures.slice(failure_start_at, failure_per_page)
-          failures_page.each &block
         end
+        failures_page = failures.slice(failure_start_at, failure_per_page) || []
+        failures_page.each &block
       else
         # default case, use standard Resque library
         Resque::Failure.each(failure_start_at, failure_per_page, params[:queue], params[:class], &block)
