@@ -1,29 +1,41 @@
 module ResqueWeb
   module FailuresHelper
-    def each_failure(&block)
+    # If job_class or exception params present, need to set up data differently
+    def initialize_failure_data
       if params[:job_class].present? || params[:exception].present?
-        failures = []
-        Resque::Failure.each(0, Resque::Failure.count, params[:queue] || 'failed', params[:class]) do |id, item|
-          matches_conditions = true
+        query_matching_failures
+        @failure_size = @failures.count
+      end
+    end
 
-          if params[:exception].present?
-            if item['exception'] != params[:exception]
-              matches_conditions = false
-            end
-          end
+    def query_matching_failures
+      @failures = []
+      Resque::Failure.each(0, Resque::Failure.count, params[:queue] || 'failed', params[:class]) do |id, item|
+        matches_conditions = true
 
-          if params[:job_class].present?
-            item_job_class = ( item.dig('payload', 'args')&.first || {} )['job_class']
-            if item_job_class.present? && item_job_class != params[:job_class]
-              matches_conditions = false
-            end
-          end
-
-          if matches_conditions == true
-            failures << [id, item]
+        if params[:exception].present?
+          if item['exception'] != params[:exception]
+            matches_conditions = false
           end
         end
-        failures_page = failures.slice(failure_start_at, failure_per_page) || []
+
+        if params[:job_class].present?
+          item_job_class = ( item.dig('payload', 'args')&.first || {} )['job_class']
+          if item_job_class.present? && item_job_class != params[:job_class]
+            matches_conditions = false
+          end
+        end
+
+        if matches_conditions == true
+          @failures << [id, item]
+        end
+      end
+    end
+
+    def each_failure(&block)
+      if params[:job_class].present? || params[:exception].present?
+        query_matching_failures if @failures.nil?
+        failures_page = @failures.slice(failure_start_at, failure_per_page) || []
         failures_page.each &block
       else
         # default case, use standard Resque library
@@ -56,14 +68,16 @@ module ResqueWeb
     end
 
     def failure_start_at
-      params[:start].to_i
+      @failure_start_at ||= params[:start].to_i
     end
 
     def failure_end_at
-      if failure_start_at + failure_per_page > failure_size
-        failure_size
-      else
-        failure_start_at + failure_per_page
+      @failure_end_at ||= begin
+        if failure_start_at + failure_per_page > failure_size
+          failure_size
+        else
+          failure_start_at + failure_per_page
+        end
       end
     end
 
