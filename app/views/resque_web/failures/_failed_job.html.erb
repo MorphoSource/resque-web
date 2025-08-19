@@ -26,20 +26,39 @@
     <dt>Class</dt>
     <dd>
       <% if job['payload'] && job['payload']['class'] %>
-        <%= link_to failures_path(:class=>job['payload']['class'],:queue=>params[:queue]) do %>
+        <%= link_to failures_path(:class=>job['payload']['class'], :queue=>params[:queue]) do %>
           <code><%= job['payload']['class'] %></code>
         <% end %>
       <% else %>
         <code>nil</code>
       <% end %>
     </dd>
+    <dt>Job Class</dt>
+    <dd>
+      <% if job['payload'] && job['payload']['args'] && job['payload']['args']&.first['job_class'] %>
+        <%= link_to failures_path(:class=>job['payload']['class'], :queue=>params[:queue], :job_class=>job['payload']['args']&.first['job_class']) do %>
+          <code><%= job['payload']['args']&.first['job_class'] %></code>
+        <% end %>
+      <% else %>
+        <code>nil</code>
+      <% end %>
+      <%= form_tag(retry_all_for_job_class_failures_path(job_class: job['payload']['args']&.first['job_class'].to_s), method: :put, style: 'margin-top: 0;') do %>
+        <%= submit_tag "Retry All Jobs Of This Class", data: { confirm: "Are you sure you want to retry ALL #{failure_queue_name.downcase} jobs with this class?" } %>
+      <% end %>
+    </dd>
     <dt>Arguments</dt>
     <dd><pre><%= job_arguments(job) %></pre></dd>
     <dt>Exception</dt>
     <dd>
-      <code><%= job['exception'] %></code>
+      <% if job['exception'] %>
+        <%= link_to failures_path(:class=>job['payload']['class'], :queue=>params[:queue], :exception=>job['exception']) do %>
+          <code><%= job['exception'] %></code>
+        <% end %>
+      <% else %>
+        <code>nil</code>
+      <% end %>
       <%= form_tag(retry_all_for_exception_failures_path(exception: job['exception'].to_s), method: :put, style: 'margin-top: 0;') do %>
-        <%= submit_tag "Retry All Jobs with Exception", data: { confirm: "Are you sure you want to retry ALL #{failure_queue_name.downcase} jobs with this exception?" } %>
+        <%= submit_tag "Retry All Jobs With Exception", data: { confirm: "Are you sure you want to retry ALL #{failure_queue_name.downcase} jobs with this exception?" } %>
       <% end %>
     </dd>
     <dt>Error</dt>
